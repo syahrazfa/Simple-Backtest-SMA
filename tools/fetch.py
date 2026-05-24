@@ -1,6 +1,6 @@
 import yfinance as yf
 import os
-from stumpy import filepath
+import pandas as pd
 
 def fetch(tickers, start, end):
 
@@ -23,22 +23,11 @@ def fetch(tickers, start, end):
 
         # combining old csv (if exist) with the new one
         if os.path.exists(filedir):
-
-            old_data = data.read_csv(filedir)
-
-            # combine old + new
-
-            combined = data.concat([old_data, data])
-
-            # remove duplicate
-            combined.drop_duplicates(Subset='Date' ,inplace=True)
-
-            # sort by date
-            combined.sort_values(by=['Date'], inplace=True)
-
-            # save to csv
-            combined.to_csv(filepath, index=False)
-
+            old_data = pd.read_csv(filedir)
+            combined = pd.concat([old_data, data])
+            combined.drop_duplicates(subset='Date', inplace=True)
+            combined.sort_values(by='Date', inplace=True)
+            combined.to_csv(filedir, index=False)
             print(f'{ticker} data updated.')
         else:
             data.to_csv(filedir, index=False)
