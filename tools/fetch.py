@@ -2,7 +2,6 @@ import yfinance as yf
 import os
 from stumpy import filepath
 
-
 def fetch(tickers, start, end):
 
     folder = "../data"
