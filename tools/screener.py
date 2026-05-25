@@ -55,4 +55,10 @@ def signals(df, fast=50, medium=100, slow=200):
     df.loc[(fast_sma < medium_sma) & (medium_sma < slow_sma), 'Signal'] = -1
 
     df['Trade'] = df['Signals'].diff()
+    df.dropna(subset=['fast_sma', 'medium_sma', 'fast_sma'], inplace=True)
+
+    df.reset_index(drop=True, inplace=True)
+    print("Buy signals:", (df['Position'] == 1).sum())
+    print("Sell signals:", (df['Position'] == -1).sum())
+
     return df
