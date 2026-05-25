@@ -4,9 +4,9 @@ import os
 datadir = os.path.join(os.path.dirname(__file__), '..', 'data')
 
 # Collecting tickers from ..\\data folder
-def ticker(path):
+def ticker(path=datadir, name):
     """
-    Function to collect the ticker data from ../data
+    Function to collect the ticker data from data directory
     Based on the parameter path
     """
     if not os.path.exists(path):
@@ -25,7 +25,11 @@ def ticker(path):
 
             stocks[tick] = data
 
-    return stocks
+    if name in stocks:
+        return stocks[name]
+
+    else:
+        raise ValueError(f"{name} not found")
 
 
 # Creating SMA Function
@@ -51,5 +55,4 @@ def signals(df, fast=50, medium=100, slow=200):
     df.loc[(fast_sma < medium_sma) & (medium_sma < slow_sma), 'Signal'] = -1
 
     df['Trade'] = df['Signals'].diff()
-
     return df
