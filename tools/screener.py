@@ -4,7 +4,7 @@ import os
 datadir = os.path.join(os.path.dirname(__file__), '..', 'data')
 
 # Collecting tickers from ..\\data folder
-def ticker(path=datadir, name):
+def ticker(name, path=datadir):
     """
     Function to collect the ticker data from data directory
     Based on the parameter path
@@ -45,20 +45,20 @@ def signals(df, fast=50, medium=100, slow=200):
     :return:
     """
     df = df.copy()
-    fast_sma = df['Close'].rolling(fast).mean()
-    medium_sma = df['Close'].rolling(medium).mean()
-    slow_sma = df['Close'].rolling(slow).mean()
-    df['Signals'] = 0
+    df['fast_sma'] = df['Close'].rolling(fast).mean()
+    df['medium_sma'] = df['Close'].rolling(medium).mean()
+    df['slow_sma'] = df['Close'].rolling(slow).mean()
+    df['Signal'] = 0
 
     # Indicating SMA Signals
-    df.loc[(fast_sma > medium_sma) & (medium_sma > slow_sma), 'Signal'] = 1
-    df.loc[(fast_sma < medium_sma) & (medium_sma < slow_sma), 'Signal'] = -1
+    df.loc[(df['fast_sma'] > df['medium_sma']) & (df['medium_sma'] > df['slow_sma']), 'Signal'] = 1
+    df.loc[(df['fast_sma'] < df['medium_sma']) & (df['medium_sma'] < df['slow_sma']), 'Signal'] = -1
 
-    df['Trade'] = df['Signals'].diff()
+    df['Trade'] = df['Signal'].diff()
     df.dropna(subset=['fast_sma', 'medium_sma', 'fast_sma'], inplace=True)
 
     df.reset_index(drop=True, inplace=True)
-    print("Buy signals:", (df['Position'] == 1).sum())
-    print("Sell signals:", (df['Position'] == -1).sum())
+    print("Buy signals:", (df['Signal'] == 1).sum())
+    print("Sell signals:", (df['Signal'] == -1).sum())
 
     return df

@@ -4,26 +4,27 @@ import pandas as pd
 
 def fetch(tickers, start, end):
 
-    folder = "../data"
+    folder = os.path.join(os.path.dirname(__file__), '..', 'data')  # absolute path
 
-    # creating the data store directory if not exist
     if not os.path.exists(folder):
-        os.mkdir(folder)
+        os.makedirs(folder, exist_ok=True)
 
     for ticker in tickers:
         print(f'{ticker} loading data...')
 
-        filedir = f"{folder}/{ticker}.csv"
+        filedir = os.path.join(folder, f"{ticker}.csv")
 
-        # download stock data
         data = yf.download(ticker, start, end)
 
-        # convert date to column
-        data.reset_index(inplace=True)
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = data.columns.get_level_values(0)
 
-        # combining old csv (if exist) with the new one
+        data.reset_index(inplace=True)
+        data['Date'] = data['Date'].astype(str)
+
         if os.path.exists(filedir):
             old_data = pd.read_csv(filedir)
+            old_data['Date'] = old_data['Date'].astype(str)
             combined = pd.concat([old_data, data])
             combined.drop_duplicates(subset='Date', inplace=True)
             combined.sort_values(by='Date', inplace=True)
@@ -32,10 +33,3 @@ def fetch(tickers, start, end):
         else:
             data.to_csv(filedir, index=False)
             print(f'{ticker} created.')
-
-
-n = ['AAPL', 'MSFT', 'TSLA']
-
-fetch(n, "2024-01-01", "2024-12-31")
-
-
