@@ -8,23 +8,31 @@ def backtest(df, capital=100000):
     buy_price = 0      # initialize here — was undefined if sell triggers before any buy
 
     for i in range(len(df)):
-        price = df['Close'].iloc[i]    # .iloc[i] instead of [i] — safer with reset_index
-        signal = df['Signal'].iloc[i]  # fix column name to match screener.py
-        date = df['Date'].iloc[i]
+        price = df['Close'].iloc[i]
+        trade = df['Trade'].iloc[i]
+        date = df.index[i]
 
-        if signal == 1 and position == 0:   # position == 0 instead of cash > 0
-            buy_price = price               # prevents double-buying
+        if trade == 1.0 and position == 0:
+            buy_price = price
             position = cash / price
             cash = 0.0
             trade_log.append(('BUY', date, price))
 
-        elif signal == -1 and position > 0:  # position > 0 instead of cash > 0
-            sell_price = price               # was checking wrong variable
+        elif trade == -1.0 and position > 0:
+            sell_price = price
             cash = position * sell_price
             profit = (sell_price - buy_price) / buy_price
             returns.append(profit)
             trade_log.append(('SELL', date, price))
             position = 0.0
+
+        elif position > 0 and price < buy_price * 0.95:  # ← stop-loss here
+            cash = position * price
+            profit = (price - buy_price) / buy_price
+            returns.append(profit)
+            trade_log.append(('STOP', date, price))
+            position = 0.0
+            buy_price = 0
 
     # Portfolio Track
     final_value = cash + (position * df['Close'].iloc[-1])  # position * price, not cash

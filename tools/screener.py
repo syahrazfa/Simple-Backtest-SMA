@@ -15,25 +15,20 @@ def ticker(name, path=datadir):
     stocks = {}
 
     for i in os.listdir(path):
-
         if i.endswith('.csv'):
             tick = i.replace('.csv', '')
-
             fullpath = os.path.join(path, i)
-
-            data = pd.read_csv(fullpath)
-
+            data = pd.read_csv(fullpath, parse_dates=['Date'], index_col='Date')  # ← change this line
             stocks[tick] = data
 
     if name in stocks:
         return stocks[name]
-
     else:
         raise ValueError(f"{name} not found")
 
 
 # Creating SMA Function
-def signals(df, fast=50, medium=100, slow=200):
+def signals(df, fast=20, medium=50, slow=100):
     """
     Simple Moving Average an analytics indicator to smoothening the price fluctuations
     and identifying market trend directions.
